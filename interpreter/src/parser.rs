@@ -4,8 +4,7 @@
  * ref
  * unique
  * contains
- * if
- * fmt
+ * format
  * path
  * env
  * uuid
@@ -88,6 +87,15 @@ impl Parser {
             "false" => return Some(EvaValue::Bool(false)),
             "nil" => return Some(EvaValue::Nil),
             _ => {}
+        }
+
+        if let Ok(num) = first.parse::<f64>() {
+            return Some(EvaValue::Number(num));
+        }
+
+        let with_dot_zero = format!("{}.0", first);
+        if let Ok(num) = with_dot_zero.parse::<f64>() {
+            return Some(EvaValue::Number(num));
         }
 
         if first.as_bytes()[0] == b'"' && first.as_bytes()[first.len()-1] == b'"' {
