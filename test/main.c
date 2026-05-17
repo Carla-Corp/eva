@@ -35,9 +35,6 @@ int main() {
         free(value.data.string);
     }
 
-    char d = eva_check_exist_field_in_namespace(parser, "dev", "map");
-    printf("exists: %d\n", d);
-
     return 0;
 
 }

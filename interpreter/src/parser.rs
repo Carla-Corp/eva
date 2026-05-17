@@ -83,7 +83,10 @@ impl Parser {
         };
 
         while c.is_whitespace() {
-            c = self.next().unwrap();
+            let Some(c2) = self.next() else {
+                return;
+            };
+            c = c2;
         }
 
         if c != '\'' {
@@ -130,7 +133,7 @@ impl Parser {
                         break;
                     };
 
-                    let Some(mut colon) = self.next() else {
+                    let Some(colon) = self.next() else {
                         return None;
                     };
 
@@ -239,6 +242,7 @@ impl Parser {
             let mut values: Vec<_> = Vec::new();
 
             loop {
+                self.comment();
                 let Some(value) = self.next_value() else {
                     break;
                 };
@@ -250,6 +254,7 @@ impl Parser {
                 };
 
                 if op == ',' {
+                    self.comment();
                     continue;
                 }
 
@@ -257,9 +262,15 @@ impl Parser {
                 break;
             }
 
-            let Some(p2) = self.next() else {
+            let Some(mut p2) = self.next() else {
                 return None;
             };
+
+            while p2.is_whitespace() {
+                p2 = self.next()?;
+            }
+
+            self.comment();
 
             return match (p1, p2) {
                 ('(', ')') => {
