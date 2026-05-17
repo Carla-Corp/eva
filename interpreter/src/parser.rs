@@ -160,7 +160,7 @@ impl Parser {
                     crate::statics::FUNCTIONS
                         .iter()
                         .find(|(name, _)| *name == first.as_str())
-                        .map(|(_, func)| func(values))
+                        .map(|(_, func)| func(self, values))
                 }
                 (_, _) => None,
             }

@@ -1,9 +1,10 @@
 use std::process::exit;
+use crate::parser::Parser;
 
 use crate::core::EvaValue;
 use crate::statics::IMPORTANT_COUNTER;
 
-pub fn service(args: Vec<EvaValue>) -> EvaValue {
+pub fn service(_: &mut Parser, args: Vec<EvaValue>) -> EvaValue {
     unsafe { IMPORTANT_COUNTER += 1; }
     let Some(value) = args.first() else {
         return EvaValue::Nil;

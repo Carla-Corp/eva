@@ -1,6 +1,7 @@
 use crate::core::EvaValue;
+use crate::parser::Parser;
 
-pub fn service(args: Vec<EvaValue>) -> EvaValue {
+pub fn service(_: &mut Parser, args: Vec<EvaValue>) -> EvaValue {
     let Some(value) = args.get(0) else {
         return EvaValue::Nil;
     };

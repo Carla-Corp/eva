@@ -1,7 +1,8 @@
 use crate::core::EvaValue;
+use crate::parser::Parser;
 
 pub const TOTAL_FUNCTIONS: usize = 12;
-pub static FUNCTIONS: [(&'static str, fn(Vec<EvaValue>) -> EvaValue); TOTAL_FUNCTIONS] = [
+pub static FUNCTIONS: [(&'static str, fn(&mut Parser, Vec<EvaValue>) -> EvaValue); TOTAL_FUNCTIONS] = [
     ("debug", crate::functions::debug::service),
     ("env", crate::functions::env::service),
     ("if", crate::functions::ternary::service),
