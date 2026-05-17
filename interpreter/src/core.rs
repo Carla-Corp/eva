@@ -9,6 +9,7 @@ pub type Error = String;
 #[derive(Debug, Clone, Default, PartialEq)]
 pub enum EvaValue {
     String(String),
+    OtherField(String),
     Number(f64),
     Bool(bool),
     List(Vec<EvaValue>),

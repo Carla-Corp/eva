@@ -115,6 +115,21 @@ impl Parser {
             .any(|(name, _)| *name == first.as_str())
     }
 
+    fn is_ref(&self, first: &String) -> bool {
+        for data in self.cache.iter() {
+            match data {
+                core::EvaCached::Field(ns, field_name, _) => {
+                    if ns == &self.namespace && field_name == first {
+                        return true;
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        return false;
+    }
+
     fn complex(&mut self, first: &String) -> Option<EvaValue> {
         if first.as_bytes()[0] == b'"' {
             let mut str = first[1..first.len()].to_string();
@@ -123,6 +138,10 @@ impl Parser {
                 str.push(c);
             }
             return Some(EvaValue::String(str));
+        }
+
+        if self.is_ref(first) {
+            return Some(EvaValue::OtherField(first.clone()))
         }
 
         if self.is_function(first) {
