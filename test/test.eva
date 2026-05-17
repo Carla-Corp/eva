@@ -1,4 +1,4 @@
 ' teste se o comentario esta funcionando
 
 @target
-name: debug("Hello, world!")
+msg: "Hello, world"

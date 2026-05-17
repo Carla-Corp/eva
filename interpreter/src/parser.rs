@@ -20,8 +20,6 @@
  *
  */
 
-use uuid::Uuid;
-
 use crate::{core::{self, *}, statics};
 
 #[derive(Clone, Default)]
@@ -59,7 +57,7 @@ impl Parser {
         let mut finished_word = false;
         let mut already_pushed = false;
         while let Some(c) = self.next() {
-            if ( c.is_whitespace() || c == ':' || c == '(' || c == ')' ) && already_pushed {
+            if ( c.is_whitespace() || c == ':' || c == '(' || c == ')' || c == ',' ) && already_pushed {
                 self.data.insert(0, c);
                 finished_word = true;
                 break;
@@ -193,14 +191,13 @@ impl Parser {
                     self.unused.clear();
 
                     let rhs = self.next_value();
-                    self.cache.push((
-                        Uuid::new_v4(),
+                    self.cache.push(
                         EvaCached::Field(
                             self.namespace.clone(),
                             lhs,
                             rhs.unwrap_or_default()
                         )
-                    ));
+                    );
                 }
 
                 _ => {

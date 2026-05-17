@@ -1,5 +1,3 @@
-use uuid::Uuid;
-
 pub enum CodeStatus {
     JustFailed = -1,
     Ok = 0,
@@ -28,4 +26,16 @@ pub enum EvaCached {
     Nil
 }
 
-pub type EvaCache = Vec<(Uuid, EvaCached)>;
+pub type EvaCache = Vec<EvaCached>;
+
+fn isinteger(s: &str) -> bool {
+    s.parse::<isize>().is_ok() && !s.contains('.')
+}
+
+fn isfloat(s: &str) -> bool {
+    s.parse::<f64>().is_ok() && s.contains('.')
+}
+
+pub fn isnumeric(token: &str) -> bool {
+    isinteger(token) || isfloat(token)
+}

@@ -1,5 +1,16 @@
-void push_parser(const char *path);
+#include <stddef.h>
+
+typedef struct EvaParser {
+    size_t status;
+    void const *parser;
+} EvaParser;
+
+EvaParser *make_parser(const char *path);
+void print_value(EvaParser *parser, const char *namespace, const char *field);
+
 int main() {
-    push_parser("test.eva");
+    EvaParser *parser = make_parser("test.eva");
+    print_value(parser, "target", "msg");
     return 0;
+
 }
