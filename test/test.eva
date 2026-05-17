@@ -1,2 +1,2 @@
 @target
-msg: debug(clamp(230, 1000, 2000))
+msg: important(debug(clamp("cu", 1000, 2000)))
