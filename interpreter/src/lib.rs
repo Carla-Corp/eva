@@ -21,15 +21,30 @@ extern "C" fn eva_make_parser(path: *const i8) -> *mut EvaParser {
             .to_string_lossy()
             .to_string();
 
-    let Ok(data) = fs::read_to_string(rs_path) else {
+    let Ok(data) = fs::read_to_string(&rs_path) else {
         return Box::into_raw(Box::new(EvaParser {
             status: core::CodeStatus::FailToOpenEvaFile as isize,
             parser: std::ptr::null_mut(),
         }));
     };
 
-    let mut parser = parser::Parser::new(&data);
-    _ = parser.parse();
+    let filename =
+        std::path::Path::new(&rs_path)
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .to_string();
+
+    let mut parser = parser::Parser::new(&filename, &data);
+    if let Some(err) = parser.parse() {
+        println!("{}", err);
+        return Box::into_raw(Box::new(EvaParser {
+            status: core::CodeStatus::JustFailed as isize,
+            parser: Box::into_raw(Box::new(
+                parser
+            )),
+        }));
+    };
 
     return Box::into_raw(Box::new(EvaParser {
         status: core::CodeStatus::Ok as isize,

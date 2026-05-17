@@ -15,7 +15,7 @@ user: {
     }
 }
 
-config: debug(deepmerge(
+config: debug(deep_merge(
     ref(base),
     ref(user)
 ))

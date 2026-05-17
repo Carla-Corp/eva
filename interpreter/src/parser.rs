@@ -23,6 +23,7 @@ use crate::{core::{self, *}, statics};
 
 #[derive(Clone, Default)]
 pub struct Parser {
+    pub filename: String,
     pub data: Vec<char>,
     pub position: (usize, usize),
     pub namespace: String,
@@ -31,8 +32,9 @@ pub struct Parser {
 }
 
 impl Parser {
-    pub fn new(data: &str) -> Self {
+    pub fn new(filename: &str, data: &str) -> Self {
         Self {
+            filename: filename.to_string(),
             namespace: "root".to_string(),
             data: data.chars().collect(),
             ..Default::default()
@@ -368,6 +370,7 @@ impl Parser {
             }
         }
 
+        println!("error: unknown `{}`\n ~> {}:@{}", first, self.filename, self.namespace);
         None
     }
 
@@ -394,18 +397,25 @@ impl Parser {
 
                 ':' => {
                     if self.unused.is_empty() {
-                        todo!("tratar erro de `:` avulso");
+                        return Some(
+                            format!("error: you just used `:` without a key\n ~> {}:@{}\n", self.filename, self.namespace)
+                        );
                     }
 
                     let lhs = self.unused.clone();
                     self.unused.clear();
 
-                    let rhs = self.next_value();
+                    let Some(rhs) = self.next_value() else {
+                        return Some(
+                            format!("error: expected a valid expression after `:`\n ~> {}:@{}:{}\n", self.filename, self.namespace, lhs)
+                        );
+                    };
+
                     self.cache.push(
                         EvaCached::Field(
                             self.namespace.clone(),
                             lhs,
-                            rhs.unwrap_or_default()
+                            rhs
                         )
                     );
                 }
