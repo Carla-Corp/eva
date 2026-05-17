@@ -193,8 +193,6 @@ extern "C" fn eva_check_exist_field_in_map(map: EvaValueFFI, f: *const i8) -> bo
     }
 }
 
-
-
 #[unsafe(no_mangle)]
 extern "C" fn eva_get_list_field(list: EvaValueFFI, index: c_int) -> EvaValueFFI {
     let internal = unsafe { list.data.list } as *const Vec<EvaValue>;
