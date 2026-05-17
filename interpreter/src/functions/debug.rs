@@ -6,5 +6,5 @@ pub fn service(args: Vec<EvaValue>) -> EvaValue {
     };
 
     println!("debug: {value:?}");
-    return EvaValue::Nil;
+    return value.clone();
 }

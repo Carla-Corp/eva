@@ -1,6 +1,6 @@
 use crate::core::EvaValue;
 
-pub const TOTAL_FUNCTIONS: usize = 10;
+pub const TOTAL_FUNCTIONS: usize = 11;
 pub static FUNCTIONS: [(&'static str, fn(Vec<EvaValue>) -> EvaValue); TOTAL_FUNCTIONS] = [
     ("debug", crate::functions::debug::service),
     ("env", crate::functions::env::service),
@@ -12,4 +12,5 @@ pub static FUNCTIONS: [(&'static str, fn(Vec<EvaValue>) -> EvaValue); TOTAL_FUNC
     ("contains", crate::functions::contains::service),
     ("startswith", crate::functions::starts_with::service),
     ("endswith", crate::functions::ends_with::service),
+    ("clamp", crate::functions::clamp::service),
 ];

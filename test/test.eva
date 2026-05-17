@@ -1,2 +1,2 @@
 @target
-msg: "Hello, world"
+msg: debug(clamp(230, 1000, 2000))
