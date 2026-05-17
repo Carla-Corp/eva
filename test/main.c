@@ -6,17 +6,24 @@
 
 int main() {
     EvaParser *parser = eva_make("test.eva");
-    EvaValue value = eva_get(parser, "data", "dev");
+    EvaValue project_name = eva_get(parser, "project", "name");
 
-    int len = eva_maplen(value);
-    printf(" sizeof map: %d\n", len);
-    if( len > 0 && eva_mapexist(value, "msg") ) {
-        EvaValue result = eva_mapget(value, "msg");
-        if( result.tag == eva_string ) {
-            printf(" result: %s\n", result.data.string);
-        }
+    if( project_name.tag == eva_string ) {
+        printf("Runnning %s project\n", project_name.data.string);
+    }
+
+    char *name;
+    EvaValue dev_name = eva_get(parser, "dev", "name");
+    if( dev_name.tag == eva_string ) {
+        name = dev_name.data.string;
+        printf("created by: %s\n", name);
+    }
+
+    EvaValue dev_messages = eva_get(parser, "dev", "messages");
+    if( dev_messages.tag == eva_list ) {
+        int index = 0;
+        printf("%s said: %s\n", name, eva_listget(dev_messages, index).data.string);
     }
 
     return 0;
-
 }

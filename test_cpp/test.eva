@@ -1,6 +1,10 @@
-@data
-dev: {
-    name: "Lucas"
-    age: 16
-    jobs: [ "lowlevel", "backend" ]
-}
+@project
+name: "EVA"
+version: "1.0.0"
+
+@dev
+name: "Lucas Silveira"
+messages: [
+    format("Hello, I am {}!", ref(name)),
+    "Hello, world"
+]

@@ -1,4 +1,10 @@
-@data
-dev: {
-    msg: "Hello, world"
-}
+@project
+name: "EVA"
+version: "1.0.0"
+
+@dev
+name: "Lucas Silveira"
+messages: [
+    format("Hello, I am {}!", ref(name)),
+    "Hello, world"
+]

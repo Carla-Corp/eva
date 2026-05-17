@@ -72,23 +72,106 @@ EVA also includes many other utility functions and data composition features.
 
 ## Language Support
 
-EVA is currently under active development.
+EVA already provides functional native implementations for both C and C++.
 
-The parser, evaluator and standard utility functions are being designed to remain portable and easy to implement across multiple programming languages and runtimes.
+The project is focused on portability, simplicity and predictable behavior across different environments while keeping the parser and runtime lightweight and easy to integrate.
 
-The goal is to provide native EVA implementations and libraries for several ecosystems while maintaining consistent behavior between them.
+| Language | Status     |
+| -------- | ---------- |
+| C        | Functional |
+| C++      | Functional |
 
-| Language | Status |
-|---|---|
-| C | In development |
-| C++ | In development |
-| Rust | In development |
-| Go | Planned |
-| Zig | Planned |
-| JavaScript / TypeScript | Planned |
-| Python | Planned |
-| Java | Planned |
+Additional implementations and bindings may be added in the future as the ecosystem evolves.
 
-Additional language bindings and implementations may be added in the future.
+The community is also welcome to create unofficial bindings for other languages and runtimes.
 
-The comunity also are welcome to make some language bindings.
+---
+
+## Reading an `.eva` file in C
+
+```c
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "eva.h"
+
+int main() {
+    EvaParser *parser = eva_make("config.eva");
+    EvaValue project_name = eva_get(parser, "project", "name");
+
+    if( project_name.tag == eva_string ) {
+        printf("Runnning %s project\n", project_name.data.string);
+    }
+
+    char *name;
+    EvaValue dev_name = eva_get(parser, "dev", "name");
+    if( dev_name.tag == eva_string ) {
+        name = dev_name.data.string;
+        printf("created by: %s\n", name);
+    }
+
+    EvaValue dev_messages = eva_get(parser, "dev", "messages");
+    if( dev_messages.tag == eva_list ) {
+        int index = 0;
+        printf("%s said: %s\n", name, eva_listget(dev_messages, index).data.string);
+    }
+
+    return 0;
+}
+```
+
+---
+
+## Reading an `.eva` file in C++
+
+```cpp
+#include <stddef.h>
+#include <iostream>
+#include <stdexcept>
+#include <stdlib.h>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+#include "eva.hpp"
+
+int main() {
+    eva parser("config.eva");
+
+    try {
+        auto project_name = parser.get<std::string>("project", "name");
+        std::cout << "Running " << project_name << " project" << std::endl;
+    } catch(std::runtime_error e) {}
+
+    std::string name;
+    try {
+        name = parser.get<std::string>("dev", "name");
+        std::cout << "created by: " << name << std::endl;
+    } catch(std::runtime_error e) {}
+
+    try {
+        auto dev_messages = parser.get<eva::list>("dev", "messages");
+        int index = 0;
+        std::cout << name << " said: " << dev_messages.operator[]<std::string>(index) << std::endl;
+    } catch(std::runtime_error e) {}
+    return 0;
+}
+```
+
+Example `config.eva`:
+
+```eva
+@project
+name: "EVA"
+version: "1.0.0"
+
+@dev
+name: "Lucas Silveira"
+messages: [
+    format("Hello, I am {}!", ref(name)),
+    "Hello, world"
+]
+```
+
+<img src="https://imgur.com/qHtCVwr.png">
