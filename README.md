@@ -52,9 +52,9 @@ EVA also includes many other utility functions and data composition features.
 | `coalesce()` | Returns the first non-null value | `coalesce(a, b, c)` |
 | `contains()` | Checks whether a string, array or map contains a value | `contains(items, "apple")` |
 | `debug()` | Prints or exposes internal debug information | `debug(config)` |
-| `deep_merge()` | Recursively merges maps | `deep_merge(base, user)` |
+| `deepmerge()` | Recursively merges maps | `deepmerge(base, user)` |
 | `else()` | Returns a fallback value if the first value is null | `else(port, 8080)` |
-| `ends_with()` | Checks whether a string ends with a value | `ends_with(name, ".png")` |
+| `endswith()` | Checks whether a string ends with a value | `endswith(name, ".png")` |
 | `entries()` | Returns all key-value pairs from a map | `entries(user)` |
 | `env()` | Reads environment variables | `env("HOME")` |
 | `extname()` | Returns the extension of a file | `extname("image.png")` |
@@ -65,7 +65,7 @@ EVA also includes many other utility functions and data composition features.
 | `lower()` | Converts text to lowercase | `lower(name)` |
 | `merge()` | Merges maps shallowly | `merge(a, b)` |
 | `ref()` | References local values inside the current namespace | `ref(home)` |
-| `starts_with()` | Checks whether a string starts with a value | `starts_with(path, "/home")` |
+| `startswith()` | Checks whether a string starts with a value | `startswith(path, "/home")` |
 | `trim()` | Removes leading and trailing whitespace | `trim(input)` |
 | `upper()` | Converts text to uppercase | `upper(name)` |
 | `values()` | Returns all values from a map | `values(config)` |
@@ -91,5 +91,4 @@ The goal is to provide native EVA implementations and libraries for several ecos
 
 Additional language bindings and implementations may be added in the future.
 
-The comunity also are welcome to make some language bindings.  
-
+The comunity also are welcome to make some language bindings.
