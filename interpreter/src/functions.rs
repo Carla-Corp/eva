@@ -11,3 +11,4 @@ pub mod contains;
 pub mod clamp;
 pub mod important;
 pub mod reference;
+pub mod format;

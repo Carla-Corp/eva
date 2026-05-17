@@ -10,7 +10,7 @@ void print_value(EvaParser *parser, const char *namespace, const char *field);
 
 int main() {
     EvaParser *parser = make_parser("test.eva");
-    print_value(parser, "target", "msg");
+    print_value(parser, "dev", "msg");
     return 0;
 
 }

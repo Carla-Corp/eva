@@ -1,3 +1,5 @@
-@target
-justref: "Hello, world!"
-msg: ref(justref)
+@dev
+start: "Hello, world!"
+name: "Lucas"
+age: 16
+msg: important(format("{} My name is {} and i am {} years old", ref(start), ref(name), ref(age)))
