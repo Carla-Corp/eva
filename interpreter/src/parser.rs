@@ -60,10 +60,7 @@ impl Parser {
         let mut already_pushed = false;
         while let Some(c) = self.next() {
             if ( c.is_whitespace() || c == ':' || c == '(' || c == ')' ) && already_pushed {
-                if! c.is_whitespace() {
-                    self.data.insert(0, c);
-                }
-
+                self.data.insert(0, c);
                 finished_word = true;
                 break;
             }
@@ -95,6 +92,10 @@ impl Parser {
             _ => {}
         }
 
+        if first.as_bytes()[0] == b'"' && first.as_bytes()[first.len()-1] == b'"' {
+            return Some(EvaValue::String(first[1..first.len()-1].to_string()));
+        }
+
         let Some(value) = self.complex(&first) else {
             return None;
         };
@@ -109,6 +110,15 @@ impl Parser {
     }
 
     fn complex(&mut self, first: &String) -> Option<EvaValue> {
+        if first.as_bytes()[0] == b'"' {
+            let mut str = first[1..first.len()].to_string();
+            while let Some(c) = self.next() {
+                if c == '"' { break; }
+                str.push(c);
+            }
+            return Some(EvaValue::String(str));
+        }
+
         if self.is_function(first) {
             let Some(p1) = self.next() else {
                 return None;

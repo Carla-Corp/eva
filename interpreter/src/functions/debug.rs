@@ -5,6 +5,6 @@ pub fn service(args: Vec<EvaValue>) -> EvaValue {
         return EvaValue::Nil;
     };
 
-    println!("debug: {value:#?}");
+    println!("debug: {value:?}");
     return EvaValue::Nil;
 }
