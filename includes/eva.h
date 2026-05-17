@@ -51,6 +51,7 @@ bool eva_check_exist_field_in_map(EvaValue map, const char *field);
 
 
 #ifndef __cplusplus
+
 #define eva_make(value) eva_make_parser(value)
 
 #define eva_dump(value) eva_dump_pointer(value)
@@ -65,6 +66,7 @@ bool eva_check_exist_field_in_map(EvaValue map, const char *field);
 #define eva_mapkeys(map) eva_get_all_keys_from_map(map)
 #define eva_mapget(map, key) eva_get_map_field(map, key)
 #define eva_mapexist(map, key) eva_check_exist_field_in_map(map, key)
+
 #endif
 
 #endif

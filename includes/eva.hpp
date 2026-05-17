@@ -18,7 +18,6 @@ public:
     eva(std::string path)
         : parser(eva_make_parser(path.c_str())) {}
 
-
     class map {
         EvaValue values;
     public:
