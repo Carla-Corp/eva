@@ -1,4 +1,4 @@
-use std::{ffi::CStr, fs};
+use std::{ffi::CStr, fs, os::raw::c_int};
 
 use crate::{core::EvaValue, ffi::*, parser::Parser};
 
@@ -111,6 +111,103 @@ extern "C" fn eva_get_value_from_namespace(parser: *mut EvaParser, ns: *const i8
     }
 
     EvaValue::Nil.to_ffi()
+}
+
+#[unsafe(no_mangle)]
+extern "C" fn eva_get_list_length(list: EvaValueFFI) -> c_int {
+    if list.tag != EvaValueTag::List {
+        return 0;
+    }
+
+    let internal = unsafe { list.data.list } as *const Vec<EvaValue>;
+    return unsafe { (*internal).len() } as c_int;
+}
+
+#[unsafe(no_mangle)]
+extern "C" fn eva_get_map_length(map: EvaValueFFI) -> c_int {
+    if map.tag != EvaValueTag::Map {
+        return 0;
+    }
+
+    let internal = unsafe { map.data.map } as *const Vec<(String, EvaValue)>;
+    return unsafe { (*internal).len() } as c_int;
+}
+
+#[unsafe(no_mangle)]
+extern "C" fn eva_get_map_field(map: EvaValueFFI, f: *const i8) -> EvaValueFFI {
+    let internal = unsafe { map.data.map } as *const Vec<(String, EvaValue)>;
+
+    let field =
+        unsafe { CStr::from_ptr(f) }
+            .to_string_lossy()
+            .to_string();
+
+    unsafe {
+        (&*internal)
+            .iter()
+            .find(|(k, _)| k == &field)
+            .cloned()
+            .map(|(_, v)| v.to_ffi())
+            .unwrap_or_else(|| EvaValue::Nil.to_ffi())
+    }
+}
+
+#[unsafe(no_mangle)]
+extern "C" fn eva_get_all_keys_from_map(map: EvaValueFFI) -> EvaValueFFI {
+    let internal = unsafe { map.data.map } as *const Vec<(String, EvaValue)>;
+
+    let list: Vec<_> = unsafe {
+        (&*internal)
+            .iter()
+            .map(|(k, _)| EvaValue::String(k.clone()))
+            .collect()
+    };
+
+    EvaValue::List(list).to_ffi()
+}
+
+#[unsafe(no_mangle)]
+extern "C" fn eva_dump_pointer(value: EvaValueFFI) {
+    match value.tag {
+        EvaValueTag::List => unsafe { _ = Box::from_raw(value.data.list); },
+        EvaValueTag::Map => unsafe { _ = Box::from_raw(value.data.map); },
+        EvaValueTag::String => unsafe { _ = Box::from_raw(value.data.string); },
+        _ => {}
+    }
+}
+
+
+#[unsafe(no_mangle)]
+extern "C" fn eva_check_exist_field_in_map(map: EvaValueFFI, f: *const i8) -> bool {
+    let internal = unsafe { map.data.map } as *const Vec<(String, EvaValue)>;
+
+    let field =
+        unsafe { CStr::from_ptr(f) }
+            .to_string_lossy()
+            .to_string();
+
+    unsafe {
+        (&*internal)
+            .iter()
+            .any(|(k, _)| k == &field)
+    }
+}
+
+
+
+#[unsafe(no_mangle)]
+extern "C" fn eva_get_list_field(list: EvaValueFFI, index: c_int) -> EvaValueFFI {
+    let internal = unsafe { list.data.list } as *const Vec<EvaValue>;
+
+    unsafe {
+        let value =
+            (&*internal)
+                .get(index as usize)
+                .cloned()
+                .unwrap_or_default();
+
+        value.to_ffi()
+    }
 }
 
 #[unsafe(no_mangle)]

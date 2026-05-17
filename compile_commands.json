@@ -1,0 +1,14 @@
+[
+  {
+    "file": "test/main.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "test/main.c",
+      "-Iincludes",
+      "-o",
+      "test/program"
+    ],
+    "directory": "/home/dev_lucasfs/Desktop/eva",
+    "output": "test/program"
+  }
+]

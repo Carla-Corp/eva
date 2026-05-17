@@ -1,21 +1,4 @@
-base: {
-    graphics: {
-        width: 1280
-        height: 720
-    }
-
-    audio: {
-        volume: 100
-    }
+@data
+dev: {
+    msg: "Hello, world"
 }
-
-user: {
-    graphics: {
-        width: 1920
-    }
-}
-
-config: debug(deep_merge(
-    ref(base),
-    ref(user)
-))

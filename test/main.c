@@ -2,37 +2,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct EvaParser {
-    size_t status;
-    void const *parser;
-} EvaParser;
-
-typedef enum {
-    eva_string,
-    eva_number,
-    eva_bool,
-    eva_nil,
-} EvaValueTag;
-
-typedef struct EvaValue {
-    EvaValueTag tag;
-    union {
-        char *string;
-        double number;
-        int boolean;
-    } data;
-} EvaValue;
-
-EvaParser *eva_make_parser(const char *path);
-EvaValue eva_get_value_from_namespace(EvaParser *parser, const char *namespace, const char *name);
-char eva_check_exist_field_in_namespace(EvaParser *parser, const char *namespace, const char *name);
+#include "eva.h"
 
 int main() {
-    EvaParser *parser = eva_make_parser("test.eva");
-    EvaValue value = eva_get_value_from_namespace(parser, "dev", "msg");
-    if( value.tag == eva_string && value.data.string ) {
-        printf("%s\n", value.data.string);
-        free(value.data.string);
+    EvaParser *parser = eva_make("test.eva");
+    EvaValue value = eva_get(parser, "data", "dev");
+
+    int len = eva_maplen(value);
+    printf(" sizeof map: %d\n", len);
+    if( len > 0 && eva_mapexist(value, "msg") ) {
+        EvaValue result = eva_mapget(value, "msg");
+        if( result.tag == eva_string ) {
+            printf(" result: %s\n", result.data.string);
+        }
     }
 
     return 0;

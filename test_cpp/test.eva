@@ -1,0 +1,6 @@
+@data
+dev: {
+    name: "Lucas"
+    age: 16
+    jobs: [ "lowlevel", "backend" ]
+}
