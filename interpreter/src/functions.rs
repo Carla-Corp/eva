@@ -1,3 +1,10 @@
 pub mod env;
 pub mod debug;
 pub mod ternary;
+pub mod default;
+pub mod lower;
+pub mod upper;
+pub mod trim;
+pub mod starts_with;
+pub mod ends_with;
+pub mod contains;

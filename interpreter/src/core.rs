@@ -6,7 +6,7 @@ pub enum CodeStatus {
 
 pub type Error = String;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub enum EvaValue {
     String(String),
     Number(f64),
