@@ -11,4 +11,9 @@ msg: important(
     )
 )
 
-list: [ "teste", 2, 3 ]
+map: debug({
+    key1: "value1"
+    key2: "value2"
+})
+
+keys: debug(merge(ref(map), { key1: "ok" }))
