@@ -14,7 +14,7 @@ pub enum EvaValueTag {
 pub union EvaValueData {
     pub string: *const c_char,
     pub number: f64,
-    pub bool: bool,
+    pub boolean: bool,
 }
 
 #[repr(C)]
@@ -43,12 +43,12 @@ impl crate::core::EvaValue {
 
             crate::core::EvaValue::Bool(b) => EvaValueFFI {
                 tag: EvaValueTag::Bool,
-                data: EvaValueData { bool: *b },
+                data: EvaValueData { boolean: *b },
             },
 
             crate::core::EvaValue::Nil => EvaValueFFI {
                 tag: EvaValueTag::Nil,
-                data: EvaValueData { bool: false }
+                data: EvaValueData { boolean: false }
             },
 
             _ => todo!()
