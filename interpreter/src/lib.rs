@@ -1,6 +1,6 @@
 use std::{ffi::CStr, fs};
 
-use crate::{core::EvaValue, ffi::{EvaValueData, EvaValueFFI, EvaValueTag}, parser::Parser};
+use crate::{core::EvaValue, ffi::*, parser::Parser};
 
 pub mod core;
 pub mod parser;

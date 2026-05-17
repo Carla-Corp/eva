@@ -35,6 +35,8 @@ int main() {
         free(value.data.string);
     }
 
+    eva_check_exist_field_in_namespace(parser, "dev", "list");
+
     return 0;
 
 }

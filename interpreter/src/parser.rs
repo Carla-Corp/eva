@@ -163,6 +163,47 @@ impl Parser {
                 return Some(EvaValue::Map(map));
             }
 
+            '[' => {
+                let mut list: Vec<_> = Vec::new();
+
+                loop {
+                    self.comment();
+
+                    let Some(value) = self.next_value() else {
+                        break;
+                    };
+
+                    list.push(value);
+
+                    self.comment();
+
+                    let Some(op) = self.next() else {
+                        return None;
+                    };
+
+                    if op == ',' {
+                        continue;
+                    }
+
+                    self.data.insert(0, op);
+                    break;
+                }
+
+                let Some(mut op) = self.next() else {
+                    return None;
+                };
+
+                while op.is_whitespace() {
+                    op = self.next()?;
+                }
+
+                if op != ']' {
+                    return None;
+                }
+
+                return Some(EvaValue::List(list));
+            }
+
             _ => {
                 self.data.insert(0, c);
             }

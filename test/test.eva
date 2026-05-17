@@ -10,3 +10,5 @@ msg: important(
         ref(age)
     )
 )
+
+list: [ "teste", 2, 3 ]
