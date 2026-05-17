@@ -17,3 +17,11 @@ map: debug({
 })
 
 keys: debug(merge(ref(map), { [ref(name)]: "ok" }))
+
+coalesce: debug(
+    important(coalesce(
+        nil,
+        nil,
+        nil
+    ))
+)

@@ -19,3 +19,4 @@ pub mod merge;
 pub mod basename;
 pub mod absolute;
 pub mod extname;
+pub mod coalesce;
