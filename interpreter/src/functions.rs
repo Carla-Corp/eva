@@ -16,3 +16,6 @@ pub mod keys;
 pub mod entries;
 pub mod values;
 pub mod merge;
+pub mod basename;
+pub mod absolute;
+pub mod extname;

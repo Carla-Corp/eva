@@ -12,8 +12,8 @@ msg: important(
 )
 
 map: debug({
-    key1: "value1"
+    [ref(name)]: "value1"
     key2: "value2"
 })
 
-keys: debug(merge(ref(map), { key1: "ok" }))
+keys: debug(merge(ref(map), { [ref(name)]: "ok" }))

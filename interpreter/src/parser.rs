@@ -129,9 +129,53 @@ impl Parser {
 
                 loop {
                     self.comment();
-                    let Some(identifier) = self.next_word() else {
+
+                    let Some(mut col) = self.next() else {
                         break;
                     };
+
+                    while col.is_whitespace() {
+                        col = self.next()?;
+                    }
+
+                    let identifier;
+                    if col == '[' {
+                        let Some(word) = self.next_word() else {
+                            return None;
+                        };
+
+                        self.comment();
+
+                        let Some(value) = self.complex(&word) else {
+                            return None;
+                        };
+
+                        self.comment();
+
+                        let EvaValue::String(str) = value else {
+                            return None;
+                        };
+
+                        identifier = str;
+
+                        let Some(mut col) = self.next() else {
+                            break;
+                        };
+
+                        while col.is_whitespace() {
+                            col = self.next()?;
+                        }
+
+                        if col != ']' {
+                            return None;
+                        }
+                    } else {
+                        self.data.insert(0, col);
+                        let Some(id) = self.next_word() else {
+                            break;
+                        };
+                        identifier = id;
+                    }
 
                     let Some(colon) = self.next() else {
                         return None;
