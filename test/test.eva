@@ -1,27 +1,21 @@
-@dev
-start: "Hello, world!"
-name: "Lucas"
-age: 16
-msg: important(
-    format(
-        "{} My name is {} and i am {} years old",
-        ref(start),
-        ref(name),
-        ref(age)
-    )
-)
+base: {
+    graphics: {
+        width: 1280
+        height: 720
+    }
 
-map: debug({
-    [ref(name)]: "value1"
-    key2: "value2"
-})
+    audio: {
+        volume: 100
+    }
+}
 
-keys: debug(merge(ref(map), { [ref(name)]: "ok" }))
+user: {
+    graphics: {
+        width: 1920
+    }
+}
 
-coalesce: debug(
-    important(coalesce(
-        nil,
-        nil,
-        nil
-    ))
-)
+config: debug(deepmerge(
+    ref(base),
+    ref(user)
+))

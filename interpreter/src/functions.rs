@@ -20,3 +20,4 @@ pub mod basename;
 pub mod absolute;
 pub mod extname;
 pub mod coalesce;
+pub mod deep_merge;
