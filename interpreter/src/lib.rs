@@ -40,7 +40,7 @@ extern "C" fn eva_make_parser(path: *const i8) -> *mut EvaParser {
 }
 
 #[unsafe(no_mangle)]
-extern "C" fn eva_check_exist(parser: *mut EvaParser, ns: *const i8, f: *const i8) -> bool {
+extern "C" fn eva_check_exist_field_in_namespace(parser: *mut EvaParser, ns: *const i8, f: *const i8) -> bool {
     let parser = unsafe { &mut *parser };
     let internal = unsafe { &*parser.parser };
 
@@ -56,8 +56,9 @@ extern "C" fn eva_check_exist(parser: *mut EvaParser, ns: *const i8, f: *const i
 
     for data in internal.cache.iter() {
         match data {
-            core::EvaCached::Field(ns, field_name, _) => {
+            core::EvaCached::Field(ns, field_name, value) => {
                 if ns == &namespace && field_name == &field {
+                    println!("{value:#?}");
                     return true;
                 }
             }

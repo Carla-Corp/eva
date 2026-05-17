@@ -77,7 +77,94 @@ impl Parser {
         return Some(word);
     }
 
+    fn comment(&mut self) {
+        let Some(mut c) = self.next() else {
+            return;
+        };
+
+        while c.is_whitespace() {
+            c = self.next().unwrap();
+        }
+
+        if c != '\'' {
+            self.data.insert(0, c);
+            return;
+        }
+
+        while let Some(c) = self.next() {
+            if c == '\n' {
+                let Some(mut c2) = self.next() else {
+                    break;
+                };
+
+                while c2.is_whitespace() {
+                    c2 = self.next().unwrap();
+                }
+
+                if c2 == '\'' {
+                    continue;
+                }
+
+                self.data.insert(0, c2);
+                break;
+            }
+        }
+    }
+
     fn next_value(&mut self) -> Option<EvaValue> {
+        let Some(mut c) = self.next() else {
+            return None;
+        };
+
+        while c.is_whitespace() {
+            c = self.next()?;
+        }
+
+        match c {
+            '{' => {
+                let mut map: Vec<_> = Vec::new();
+
+                loop {
+                    self.comment();
+                    let Some(identifier) = self.next_word() else {
+                        break;
+                    };
+
+                    let Some(mut colon) = self.next() else {
+                        return None;
+                    };
+
+                    if colon != ':' {
+                        return None;
+                    }
+
+                    let Some(value) = self.next_value() else {
+                        break;
+                    };
+
+                    self.comment();
+
+                    map.push((identifier, value));
+                    let Some(op) = self.next() else {
+                        return None;
+                    };
+
+                    if op != '}' {
+                        self.data.insert(0, op);
+                        continue;
+                    }
+
+                    break;
+                }
+
+                return Some(EvaValue::Map(map));
+            }
+
+            _ => {
+                self.data.insert(0, c);
+            }
+        };
+
         let Some(first) = self.next_word() else {
             return None;
         };

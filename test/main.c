@@ -25,6 +25,7 @@ typedef struct EvaValue {
 
 EvaParser *eva_make_parser(const char *path);
 EvaValue eva_get_value_from_namespace(EvaParser *parser, const char *namespace, const char *name);
+char eva_check_exist_field_in_namespace(EvaParser *parser, const char *namespace, const char *name);
 
 int main() {
     EvaParser *parser = eva_make_parser("test.eva");
@@ -34,6 +35,8 @@ int main() {
         free(value.data.string);
     }
 
+    char d = eva_check_exist_field_in_namespace(parser, "dev", "map");
+    printf("exists: %d\n", d);
 
     return 0;
 
