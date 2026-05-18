@@ -16,6 +16,16 @@ public:
     eva(std::string path)
         : parser(eva_make_parser(path.c_str())) {}
 
+    template <typename T>
+    auto first(std::pair<bool, T> p) {
+        return std::get<0>(p);
+    }
+
+    template <typename T>
+    auto second(std::pair<bool, T> p) {
+        return std::get<1>(p);
+    }
+
     class map {
         EvaValue values;
     public:
@@ -29,7 +39,7 @@ public:
         }
 
         template<typename T>
-        const std::tuple<bool, T> operator[](std::string key) const {
+        const std::pair<bool, T> operator[](std::string key) const {
             if(! eva_check_exist_field_in_map(values, key.c_str()) )
             /* -> */ return std::make_tuple(false, T());
 
@@ -37,35 +47,35 @@ public:
 
             if constexpr (std::is_same_v<T, std::string>) {
                 if( value.tag == eva_string )
-                    return std::string(value.data.string);
+                    return {true, std::string(value.data.string)};
 
                 throw std::runtime_error("unexpected field type: " + key);
             }
 
             if constexpr (std::is_same_v<T, double> || std::is_same_v<T, int> || std::is_same_v<T, size_t>) {
                 if( value.tag == eva_number )
-                    return static_cast<T>(value.data.number);
+                    return {true, static_cast<T>(value.data.number)};
 
                 throw std::runtime_error("unexpected field type: " + key);
             }
 
             if constexpr (std::is_same_v<T, bool>) {
                 if( value.tag == eva_bool )
-                    return static_cast<T>(value.data.boolean);
+                    return {true, static_cast<T>(value.data.boolean)};
 
                 throw std::runtime_error("unexpected field type: " + key);
             }
 
             if constexpr (std::is_same_v<T, list>) {
                 if( value.tag == eva_list )
-                    return value;
+                    return {true, value};
 
                 throw std::runtime_error("unexpected field type: " + key);
             }
 
             if constexpr (std::is_same_v<T, map>) {
                 if( value.tag == eva_map )
-                    return value;
+                    return {true, value};
 
                 throw std::runtime_error("unexpected field type: " + key);
             }
@@ -86,41 +96,41 @@ public:
         }
 
         template<typename T>
-        const std::tuple<bool, T> operator[](size_t index) const {
+        const std::pair<bool, T> operator[](size_t index) const {
             if( index >= size() ) return std::make_tuple(false, T());
             EvaValue value = eva_get_list_field(values, index);
 
             if constexpr (std::is_same_v<T, std::string>) {
                 if( value.tag == eva_string )
-                    return std::string(value.data.string);
+                    return {true, std::string(value.data.string)};
 
                 throw std::runtime_error("unexpected index type: " + std::to_string(index));
             }
 
             if constexpr (std::is_same_v<T, double> || std::is_same_v<T, int> || std::is_same_v<T, size_t>) {
                 if( value.tag == eva_number )
-                    return static_cast<T>(value.data.number);
+                    return {true, static_cast<T>(value.data.number)};
 
                 throw std::runtime_error("unexpected index type: " + std::to_string(index));
             }
 
             if constexpr (std::is_same_v<T, bool>) {
                 if( value.tag == eva_bool )
-                    return static_cast<T>(value.data.boolean);
+                    return {true, static_cast<T>(value.data.boolean)};
 
                 throw std::runtime_error("unexpected index type: " + std::to_string(index));
             }
 
             if constexpr (std::is_same_v<T, list>) {
                 if( value.tag == eva_list )
-                    return value;
+                    return {true, value};
 
                 throw std::runtime_error("unexpected index type: " + std::to_string(index));
             }
 
             if constexpr (std::is_same_v<T, map>) {
                 if( value.tag == eva_map )
-                    return value;
+                    return {true, value};
 
                 throw std::runtime_error("unexpected index type: " + std::to_string(index));
             }
@@ -134,7 +144,7 @@ public:
     }
 
     template <typename T>
-    std::tuple<bool, T> get(std::string ns, std::string field) {
+    std::pair<bool, T> get(std::string ns, std::string field) {
         if(! eva_check_exist_field_in_namespace(parser, ns.c_str(), field.c_str()) )
         /* -> */ return std::make_tuple(false, T());
 
@@ -142,7 +152,7 @@ public:
             EvaValue value = eva_get_value_from_namespace(parser, ns.c_str(), field.c_str());
 
             if( value.tag == eva_string )
-                return std::string(value.data.string);
+                return {true, std::string(value.data.string)};
 
             throw std::runtime_error("unexpected field type: " + field);
         }
@@ -151,7 +161,7 @@ public:
             EvaValue value = eva_get_value_from_namespace(parser, ns.c_str(), field.c_str());
 
             if( value.tag == eva_number )
-                return static_cast<T>(value.data.number);
+                return {true, static_cast<T>(value.data.number)};
 
             throw std::runtime_error("unexpected field type: " + field);
         }
@@ -160,7 +170,7 @@ public:
             EvaValue value = eva_get_value_from_namespace(parser, ns.c_str(), field.c_str());
 
             if( value.tag == eva_bool )
-                return static_cast<T>(value.data.boolean);
+                return {true, static_cast<T>(value.data.boolean)};
 
             throw std::runtime_error("unexpected field type: " + field);
         }
@@ -169,7 +179,7 @@ public:
             EvaValue value = eva_get_value_from_namespace(parser, ns.c_str(), field.c_str());
 
             if( value.tag == eva_list )
-                return value;
+                return {true, value};
 
             throw std::runtime_error("unexpected field type: " + field);
         }
@@ -178,7 +188,7 @@ public:
             EvaValue value = eva_get_value_from_namespace(parser, ns.c_str(), field.c_str());
 
             if( value.tag == eva_map )
-                return value;
+                return {true, value};
 
             throw std::runtime_error("unexpected field type: " + field);
         }
