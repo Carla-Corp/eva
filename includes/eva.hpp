@@ -4,8 +4,6 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <string>
-#include <variant>
-#include <vector>
 
 extern "C" {
 #define EVA_USING_C_ABI
@@ -24,12 +22,17 @@ public:
         map(EvaValue values)
             : values(values) {}
 
+        map() {};
+
         const size_t size() const {
             return eva_get_map_length(values);
         }
 
         template<typename T>
-        const T operator[](std::string key) const {
+        const std::tuple<bool, T> operator[](std::string key) const {
+            if(! eva_check_exist_field_in_map(values, key.c_str()) )
+            /* -> */ return std::make_tuple(false, T());
+
             EvaValue value = eva_get_map_field(values, key.c_str());
 
             if constexpr (std::is_same_v<T, std::string>) {
@@ -76,12 +79,15 @@ public:
         list(EvaValue values)
             : values(values) {}
 
+        list() {};
+
         const size_t size() const {
             return eva_get_list_length(values);
         }
 
         template<typename T>
-        const T operator[](size_t index) const {
+        const std::tuple<bool, T> operator[](size_t index) const {
+            if( index >= size() ) return std::make_tuple(false, T());
             EvaValue value = eva_get_list_field(values, index);
 
             if constexpr (std::is_same_v<T, std::string>) {
