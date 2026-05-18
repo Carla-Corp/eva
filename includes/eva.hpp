@@ -134,7 +134,9 @@ public:
     }
 
     template <typename T>
-    T get(std::string ns, std::string field) {
+    std::tuple<bool, T> get(std::string ns, std::string field) {
+        if(! eva_check_exist_field_in_namespace(parser, ns.c_str(), field.c_str()) )
+        /* -> */ return std::make_tuple(false, T());
 
         if constexpr (std::is_same_v<T, std::string>) {
             EvaValue value = eva_get_value_from_namespace(parser, ns.c_str(), field.c_str());
