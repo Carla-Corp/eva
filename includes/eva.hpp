@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 extern "C" {
 #define EVA_USING_C_ABI
@@ -17,12 +18,15 @@ public:
         : parser(eva_make_parser(path.c_str())) {}
 
     template <typename T>
-    auto first(std::pair<bool, T> p) {
+    using result = std::pair<bool, T>;
+
+    template <typename T>
+    static T check(std::pair<bool, T> p) {
         return std::get<0>(p);
     }
 
     template <typename T>
-    auto second(std::pair<bool, T> p) {
+    static T data(std::pair<bool, T> p) {
         return std::get<1>(p);
     }
 
@@ -41,7 +45,7 @@ public:
         template<typename T>
         const std::pair<bool, T> operator[](std::string key) const {
             if(! eva_check_exist_field_in_map(values, key.c_str()) )
-            /* -> */ return std::make_tuple(false, T());
+            /* -> */ return std::make_pair(false, T());
 
             EvaValue value = eva_get_map_field(values, key.c_str());
 
@@ -97,7 +101,7 @@ public:
 
         template<typename T>
         const std::pair<bool, T> operator[](size_t index) const {
-            if( index >= size() ) return std::make_tuple(false, T());
+            if( index >= size() ) return std::make_pair(false, T());
             EvaValue value = eva_get_list_field(values, index);
 
             if constexpr (std::is_same_v<T, std::string>) {
@@ -146,7 +150,7 @@ public:
     template <typename T>
     std::pair<bool, T> get(std::string ns, std::string field) {
         if(! eva_check_exist_field_in_namespace(parser, ns.c_str(), field.c_str()) )
-        /* -> */ return std::make_tuple(false, T());
+        /* -> */ return std::make_pair(false, T());
 
         if constexpr (std::is_same_v<T, std::string>) {
             EvaValue value = eva_get_value_from_namespace(parser, ns.c_str(), field.c_str());

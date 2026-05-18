@@ -1,3 +1,4 @@
 interpreter/target
 test/program
 test/libeva.a
+compile_commands.json
