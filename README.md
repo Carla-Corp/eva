@@ -76,10 +76,11 @@ EVA already provides functional native implementations for both C and C++.
 
 The project is focused on portability, simplicity and predictable behavior across different environments while keeping the parser and runtime lightweight and easy to integrate.
 
-| Language | Status     |
-| -------- | ---------- |
-| C        | Functional |
-| C++      | Functional |
+| Language   | Status     |
+| ---------- | ---------- |
+| C          | Functional |
+| C++        | Functional |
+| [Typescript (Bun)](https://github.com/Carla-Corp/eva-ts) | Functional |
 
 Additional implementations and bindings may be added in the future as the ecosystem evolves.
 
@@ -133,7 +134,7 @@ int main() {
 #include "eva.hpp"
 
 int main() {
-    eva parser("test.eva");
+    eva parser("config.eva");
 
     {   auto [exist, project_name] = parser.get<std::string>("project", "name");
         if(! exist ) return 1;
@@ -153,6 +154,25 @@ int main() {
 
     return 0;
 }
+```
+
+## Reading an `.eva` file in Typescript (Bun)
+
+```typescript
+import { Eva, EvaMap, EvaList } from "eva-dcl";
+import { join } from "path";
+
+const author = new Eva(join(__dirname, "config.eva"));
+const project_name = await author.get<string>("project", "name");
+console.log(`Running ${project_name} project`);
+
+const dev = await author.get<EvaMap>("dev", "name");
+console.log(`created by ${dev}`);
+
+const dev_messages = await author.get<EvaList>("dev", "messages");
+const index = 0;
+const message = await dev_messages.get(index);
+console.log(`${dev} said: ${message}`);
 ```
 
 Example `config.eva`:
