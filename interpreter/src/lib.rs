@@ -71,7 +71,7 @@ extern "C" fn eva_check_exist_field_in_namespace(parser: *mut EvaParser, ns: *co
 
     for data in internal.cache.iter() {
         match data {
-            core::EvaCached::Field(ns, field_name, value) => {
+            core::EvaCached::Field(ns, field_name, _) => {
                 if ns == &namespace && field_name == &field {
                     return true;
                 }
