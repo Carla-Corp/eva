@@ -46,5 +46,5 @@ jobs:
         with:
           name: libs-${{ matrix.os }}-${{ matrix.target }}
           path: |
-            target/${{ matrix.target }}/release/*.${{ matrix.dynamic_ext }}
-            target/${{ matrix.target }}/release/*.${{ matrix.static_ext }}
+            interpreter/target/${{ matrix.target }}/release/*.${{ matrix.dynamic_ext }}
+            interpreter/target/${{ matrix.target }}/release/*.${{ matrix.static_ext }}
