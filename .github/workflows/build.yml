@@ -1,0 +1,50 @@
+name: Build ALL Library Formats
+on: [push, workflow_dispatch]
+
+jobs:
+  build-all:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            dynamic_ext: dll
+            static_ext: lib
+            target: x86_64-pc-windows-msvc
+
+          - os: ubuntu-latest
+            dynamic_ext: so
+            static_ext: a
+            target: x86_64-unknown-linux-gnu
+
+          - os: macos-latest
+            dynamic_ext: dylib
+            static_ext: a
+            target: x86_64-apple-darwin
+
+          - os: macos-latest
+            dynamic_ext: dylib
+            static_ext: a
+            target: aarch64-apple-darwin
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          target: ${{ matrix.target }}
+
+      - name: Build Dynamic Library (.${{ matrix.dynamic_ext }})
+        run: cargo rustc --target ${{ matrix.target }} --release -- --crate-type cdylib
+
+      - name: Build Static Library (.${{ matrix.static_ext }})
+        run: cargo rustc --target ${{ matrix.target }} --release -- --crate-type staticlib
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: libs-${{ matrix.os }}-${{ matrix.target }}
+          path: |
+            target/${{ matrix.target }}/release/*.${{ matrix.dynamic_ext }}
+            target/${{ matrix.target }}/release/*.${{ matrix.static_ext }}
