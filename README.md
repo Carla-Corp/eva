@@ -76,11 +76,13 @@ EVA already provides functional native implementations for both C and C++.
 
 The project is focused on portability, simplicity and predictable behavior across different environments while keeping the parser and runtime lightweight and easy to integrate.
 
-| Language   | Status     |
-| ---------- | ---------- |
-| C          | Functional |
-| C++        | Functional |
-| [Typescript (Bun)](https://github.com/Carla-Corp/eva-ts) | Functional |
+| Language   | Support          |
+| ---------- | ---------------- |
+| C          | Official support |
+| C++        | Official support |
+| [Typescript (Bun)](https://github.com/Carla-Corp/eva-ts) | Official support |
+| [Java](https://github.com/guigui-will/Eva-java) | Community support |
+| [Python](https://github.com/guigui-will/Eva-py) | Community support |
 
 Additional implementations and bindings may be added in the future as the ecosystem evolves.
 
