@@ -1,61 +1,66 @@
 name: Build ALL Library Formats
-on: [push, workflow_dispatch]
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   build-all:
     strategy:
       matrix:
         include:
-          # Windows x86_64
+          # === Windows ===
           - os: windows-latest
-            arch: x86_64
-            dynamic_ext: dll
-            static_ext: lib
             target: x86_64-pc-windows-msvc
-
-          # Windows ARM64
-          - os: windows-latest
-            arch: arm64
             dynamic_ext: dll
             static_ext: lib
+
+          - os: windows-latest
             target: aarch64-pc-windows-msvc
+            dynamic_ext: dll
+            static_ext: lib
 
-          # Linux x86_64
+          # === Linux ===
           - os: ubuntu-latest
-            arch: x86_64
-            dynamic_ext: so
-            static_ext: a
             target: x86_64-unknown-linux-gnu
-
-          # Linux ARM64
-          - os: ubuntu-latest
-            arch: arm64
             dynamic_ext: so
             static_ext: a
+
+          - os: ubuntu-latest
             target: aarch64-unknown-linux-gnu
-
-          # Linux ARM32
-          - os: ubuntu-latest
-            arch: arm
             dynamic_ext: so
             static_ext: a
+
+          - os: ubuntu-latest
             target: armv7-unknown-linux-gnueabihf
-
-          # macOS x86_64
-          - os: macos-latest
-            arch: x86_64
-            dynamic_ext: dylib
+            dynamic_ext: so
             static_ext: a
+
+          # === macOS ===
+          - os: macos-latest
             target: x86_64-apple-darwin
-
-          # macOS ARM64 (Apple Silicon)
-          - os: macos-latest
-            arch: arm64
             dynamic_ext: dylib
             static_ext: a
+
+          - os: macos-latest
             target: aarch64-apple-darwin
+            dynamic_ext: dylib
+            static_ext: a
+
+          # === FreeBSD ===
+          - os: ubuntu-latest
+            target: x86_64-unknown-freebsd
+            dynamic_ext: so
+            static_ext: a
+
+          - os: ubuntu-latest
+            target: aarch64-unknown-freebsd
+            dynamic_ext: so
+            static_ext: a
 
     runs-on: ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -63,23 +68,36 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           target: ${{ matrix.target }}
+          # Para alguns targets (FreeBSD, armv7, etc) precisamos do cross
+          components: rust-src
 
-      - name: Install cross-compilation tools (Linux ARM)
-        if: contains(matrix.target, 'aarch64') || contains(matrix.target, 'armv7')
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf
+      - name: Install cross (quando necessário)
+        if: contains(matrix.target, 'freebsd') || contains(matrix.target, 'armv7')
+        run: cargo install cross
 
       - name: Build Dynamic Library (.${{ matrix.dynamic_ext }})
-        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release -- --crate-type cdylib -C panic=abort
+        run: |
+          cd interpreter
+          if [[ "${{ matrix.target }}" == *freebsd* || "${{ matrix.target }}" == *armv7* ]]; then
+            cross rustc --target ${{ matrix.target }} --release -- --crate-type cdylib
+          else
+            cargo rustc --target ${{ matrix.target }} --release -- --crate-type cdylib
+          fi
 
       - name: Build Static Library (.${{ matrix.static_ext }})
-        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release -- --crate-type staticlib -C panic=abort
+        run: |
+          cd interpreter
+          if [[ "${{ matrix.target }}" == *freebsd* || "${{ matrix.target }}" == *armv7* ]]; then
+            cross rustc --target ${{ matrix.target }} --release -- --crate-type staticlib
+          else
+            cargo rustc --target ${{ matrix.target }} --release -- --crate-type staticlib
+          fi
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: libs-${{ matrix.os }}-${{ matrix.arch }}
+          name: libs-${{ matrix.target }}
           path: |
             interpreter/target/${{ matrix.target }}/release/*.${{ matrix.dynamic_ext }}
             interpreter/target/${{ matrix.target }}/release/*.${{ matrix.static_ext }}
+          retention-days: 7
