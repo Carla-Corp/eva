@@ -7,43 +7,26 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            arch: x86_64
-            ext: lib
+            dynamic_ext: dll
+            static_ext: lib
             target: x86_64-pc-windows-msvc
-            use_llvm: true
-
-          - os: windows-latest
-            arch: arm64
-            ext: lib
-            target: aarch64-pc-windows-msvc
-            use_llvm: true
 
           - os: ubuntu-latest
-            arch: x86_64
-            ext: a
+            dynamic_ext: so
+            static_ext: a
             target: x86_64-unknown-linux-gnu
-            use_llvm: false
-
-          - os: ubuntu-latest
-            arch: arm64
-            ext: a
-            target: aarch64-unknown-linux-gnu
-            use_llvm: false
 
           - os: macos-latest
-            arch: x86_64
-            ext: a
+            dynamic_ext: dylib
+            static_ext: a
             target: x86_64-apple-darwin
-            use_llvm: true
 
           - os: macos-latest
-            arch: arm64
-            ext: a
+            dynamic_ext: dylib
+            static_ext: a
             target: aarch64-apple-darwin
-            use_llvm: true
 
     runs-on: ${{ matrix.os }}
-
     steps:
       - uses: actions/checkout@v4
 
@@ -52,47 +35,16 @@ jobs:
         with:
           target: ${{ matrix.target }}
 
-      - name: Install cross-compilation tools (Linux ARM)
-        if: contains(matrix.target, 'aarch64-unknown-linux')
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
+      - name: Build Dynamic Library (.${{ matrix.dynamic_ext }})
+        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release -- --crate-type cdylib
 
-      - name: Install LLVM (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          brew install llvm
-          echo "/usr/local/opt/llvm/bin" >> $GITHUB_PATH
-
-      - name: Install LLVM (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          choco install llvm -y
-          echo "C:\Program Files\LLVM\bin" >> $GITHUB_PATH
-
-      - name: Build Library
-        run: |
-          cd interpreter
-          cargo build --target ${{ matrix.target }} --release --no-default-features
-
-      - name: Fix symbols (Linux/macOS)
-        if: matrix.os != 'windows-latest'
-        run: |
-          chmod +x scripts/fix_symbols.sh
-          find interpreter/target/${{ matrix.target }}/release -name "*.a" -exec ./scripts/fix_symbols.sh {} \;
-
-      - name: Fix symbols (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: bash
-        run: |
-          find interpreter/target/${{ matrix.target }}/release -name "*.lib" -exec cmd /c scripts\\fix_symbols.cmd {} \;
+      - name: Build Static Library (.${{ matrix.static_ext }})
+        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release -- --crate-type staticlib
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: libs-${{ matrix.os }}-${{ matrix.arch }}
+          name: libs-${{ matrix.os }}-${{ matrix.target }}
           path: |
-            interpreter/target/${{ matrix.target }}/release/*.${{ matrix.ext }}
-            interpreter/target/${{ matrix.target }}/release/*.dll
-            interpreter/target/${{ matrix.target }}/release/*.so
-            interpreter/target/${{ matrix.target }}/release/*.dylib
+            interpreter/target/${{ matrix.target }}/release/*.${{ matrix.dynamic_ext }}
+            interpreter/target/${{ matrix.target }}/release/*.${{ matrix.static_ext }}
