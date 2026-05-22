@@ -13,3 +13,6 @@ codegen-units = 1
 opt-level = "z"
 debug = false
 strip = true
+
+[features]
+default = []
