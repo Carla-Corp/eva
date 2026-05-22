@@ -6,25 +6,54 @@ jobs:
     strategy:
       matrix:
         include:
+          # Windows x86_64
           - os: windows-latest
-            dynamic_ext: dll
-            static_ext: lib
+            arch: x86_64
+            ext: lib
             target: x86_64-pc-windows-msvc
+            tool: "llvm-objcopy"
 
+          # Windows ARM64
+          - os: windows-latest
+            arch: arm64
+            ext: lib
+            target: aarch64-pc-windows-msvc
+            tool: "llvm-objcopy"
+
+          # Linux x86_64
           - os: ubuntu-latest
-            dynamic_ext: so
-            static_ext: a
+            arch: x86_64
+            ext: a
             target: x86_64-unknown-linux-gnu
+            tool: "objcopy"
 
+          # Linux ARM64
+          - os: ubuntu-latest
+            arch: arm64
+            ext: a
+            target: aarch64-unknown-linux-gnu
+            tool: "objcopy"
+
+          # Linux ARM32
+          - os: ubuntu-latest
+            arch: arm
+            ext: a
+            target: armv7-unknown-linux-gnueabihf
+            tool: "objcopy"
+
+          # macOS x86_64
           - os: macos-latest
-            dynamic_ext: dylib
-            static_ext: a
+            arch: x86_64
+            ext: a
             target: x86_64-apple-darwin
+            tool: "llvm-objcopy"
 
+          # macOS ARM64 (Apple Silicon)
           - os: macos-latest
-            dynamic_ext: dylib
-            static_ext: a
+            arch: arm64
+            ext: a
             target: aarch64-apple-darwin
+            tool: "llvm-objcopy"
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -35,16 +64,70 @@ jobs:
         with:
           target: ${{ matrix.target }}
 
-      - name: Build Dynamic Library (.${{ matrix.dynamic_ext }})
-        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release -- --crate-type cdylib
+      - name: Install cross-compilation tools (Linux ARM)
+        if: matrix.target == 'aarch64-unknown-linux-gnu' || matrix.target == 'armv7-unknown-linux-gnueabihf'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf
 
-      - name: Build Static Library (.${{ matrix.static_ext }})
-        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release -- --crate-type staticlib
+      - name: Install llvm-tools (Windows/macOS)
+        if: matrix.os != 'ubuntu-latest'
+        run: |
+          rustup component add llvm-tools-preview
+
+      - name: Build Library
+        run: |
+          cd interpreter
+          cargo build --target ${{ matrix.target }} --release --no-default-features
+
+      - name: Fix symbol conflicts (rename rust_eh_personality) - Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cd interpreter/target/${{ matrix.target }}/release
+          LIB_FILE=$(ls *.a 2>/dev/null | head -1)
+          if [ -f "$LIB_FILE" ]; then
+            ${{ matrix.tool }} --redefine-sym rust_eh_personality=__custom_rust_eh "$LIB_FILE" "${LIB_FILE%.a}_fixed.a"
+            mv "${LIB_FILE%.a}_fixed.a" "$LIB_FILE"
+            echo "Fixed symbols in $LIB_FILE"
+          fi
+
+      - name: Fix symbol conflicts (rename rust_eh_personality) - Windows
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          cd interpreter/target/${{ matrix.target }}/release
+          LIB_FILE=$(ls *.lib 2>/dev/null | head -1)
+          if [ -f "$LIB_FILE" ]; then
+            mkdir -p temp_lib
+            cp "$LIB_FILE" temp_lib/
+            cd temp_lib
+            llvm-ar x "$LIB_FILE"
+            for obj in *.obj; do
+              llvm-objcopy --redefine-sym rust_eh_personality=__custom_rust_eh "$obj"
+            done
+            llvm-ar rcs "../$LIB_FILE" *.obj
+            cd ..
+            rm -rf temp_lib
+            echo "Fixed symbols in $LIB_FILE"
+          fi
+
+      - name: Fix symbol conflicts (rename rust_eh_personality) - macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd interpreter/target/${{ matrix.target }}/release
+          LIB_FILE=$(ls *.a 2>/dev/null | head -1)
+          if [ -f "$LIB_FILE" ]; then
+            ${{ matrix.tool }} --redefine-sym rust_eh_personality=__custom_rust_eh "$LIB_FILE" "${LIB_FILE%.a}_fixed.a"
+            mv "${LIB_FILE%.a}_fixed.a" "$LIB_FILE"
+            echo "Fixed symbols in $LIB_FILE"
+          fi
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: libs-${{ matrix.os }}-${{ matrix.target }}
+          name: libs-${{ matrix.os }}-${{ matrix.arch }}
           path: |
-            interpreter/target/${{ matrix.target }}/release/*.${{ matrix.dynamic_ext }}
-            interpreter/target/${{ matrix.target }}/release/*.${{ matrix.static_ext }}
+            interpreter/target/${{ matrix.target }}/release/*.${{ matrix.ext }}
+            interpreter/target/${{ matrix.target }}/release/*.dll
+            interpreter/target/${{ matrix.target }}/release/*.so
+            interpreter/target/${{ matrix.target }}/release/*.dylib
