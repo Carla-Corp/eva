@@ -8,56 +8,66 @@ on:
 jobs:
   build-all:
     strategy:
+      fail-fast: false
       matrix:
         include:
-          # === Windows ===
+          # Windows
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             dynamic_ext: dll
             static_ext: lib
+            use_cross: false
 
           - os: windows-latest
             target: aarch64-pc-windows-msvc
             dynamic_ext: dll
             static_ext: lib
+            use_cross: false
 
-          # === Linux ===
+          # Linux
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             dynamic_ext: so
             static_ext: a
+            use_cross: false
 
           - os: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             dynamic_ext: so
             static_ext: a
+            use_cross: false
 
           - os: ubuntu-latest
             target: armv7-unknown-linux-gnueabihf
             dynamic_ext: so
             static_ext: a
+            use_cross: true
 
-          # === macOS ===
+          # macOS
           - os: macos-latest
             target: x86_64-apple-darwin
             dynamic_ext: dylib
             static_ext: a
+            use_cross: false
 
           - os: macos-latest
             target: aarch64-apple-darwin
             dynamic_ext: dylib
             static_ext: a
+            use_cross: false
 
-          # === FreeBSD ===
+          # FreeBSD
           - os: ubuntu-latest
             target: x86_64-unknown-freebsd
             dynamic_ext: so
             static_ext: a
+            use_cross: true
 
           - os: ubuntu-latest
             target: aarch64-unknown-freebsd
             dynamic_ext: so
             static_ext: a
+            use_cross: true
 
     runs-on: ${{ matrix.os }}
 
@@ -68,30 +78,30 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           target: ${{ matrix.target }}
-          # Para alguns targets (FreeBSD, armv7, etc) precisamos do cross
-          components: rust-src
 
-      - name: Install cross (quando necessário)
-        if: contains(matrix.target, 'freebsd') || contains(matrix.target, 'armv7')
-        run: cargo install cross
+      - name: Install cross
+        if: matrix.use_cross
+        run: cargo install cross --locked
 
-      - name: Build Dynamic Library (.${{ matrix.dynamic_ext }})
+      - name: Build Dynamic Library
         run: |
           cd interpreter
-          if [[ "${{ matrix.target }}" == *freebsd* || "${{ matrix.target }}" == *armv7* ]]; then
+          if [[ "${{ matrix.use_cross }}" == "true" ]]; then
             cross rustc --target ${{ matrix.target }} --release -- --crate-type cdylib
           else
             cargo rustc --target ${{ matrix.target }} --release -- --crate-type cdylib
           fi
+        shell: bash
 
-      - name: Build Static Library (.${{ matrix.static_ext }})
+      - name: Build Static Library
         run: |
           cd interpreter
-          if [[ "${{ matrix.target }}" == *freebsd* || "${{ matrix.target }}" == *armv7* ]]; then
+          if [[ "${{ matrix.use_cross }}" == "true" ]]; then
             cross rustc --target ${{ matrix.target }} --release -- --crate-type staticlib
           else
             cargo rustc --target ${{ matrix.target }} --release -- --crate-type staticlib
           fi
+        shell: bash
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -100,4 +110,4 @@ jobs:
           path: |
             interpreter/target/${{ matrix.target }}/release/*.${{ matrix.dynamic_ext }}
             interpreter/target/${{ matrix.target }}/release/*.${{ matrix.static_ext }}
-          retention-days: 7
+          retention-days: 14
