@@ -36,10 +36,10 @@ jobs:
           target: ${{ matrix.target }}
 
       - name: Build Dynamic Library (.${{ matrix.dynamic_ext }})
-        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release -- --crate-type cdylib -C panic=abort
+        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release --no-default-features -- --crate-type cdylib
 
       - name: Build Static Library (.${{ matrix.static_ext }})
-        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release -- --crate-type staticlib --no-default-features -C panic=abort
+        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release -- --crate-type staticlib
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
