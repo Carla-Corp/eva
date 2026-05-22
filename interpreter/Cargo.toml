@@ -5,14 +5,3 @@ edition = "2024"
 
 [lib]
 crate-type = ["dylib", "staticlib"]
-
-[profile.release]
-panic = "abort"
-lto = true
-codegen-units = 1
-opt-level = "z"
-debug = false
-strip = true
-
-[features]
-default = []
