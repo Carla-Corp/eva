@@ -1,4 +1,4 @@
-use std::{ffi::CStr, fs, os::raw::c_int};
+use std::{ffi::CStr, fs, os::raw::{c_char, c_int},};
 
 use crate::{core::EvaValue, ffi::*, parser::Parser};
 
@@ -15,7 +15,7 @@ struct EvaParser {
 }
 
 #[unsafe(no_mangle)]
-extern "C" fn eva_make_parser(path: *const i8) -> *mut EvaParser {
+extern "C" fn eva_make_parser(path: *const c_char) -> *mut EvaParser {
     let rs_path =
         unsafe { CStr::from_ptr(path) }
             .to_string_lossy()
@@ -55,7 +55,7 @@ extern "C" fn eva_make_parser(path: *const i8) -> *mut EvaParser {
 }
 
 #[unsafe(no_mangle)]
-extern "C" fn eva_check_exist_field_in_namespace(parser: *mut EvaParser, ns: *const i8, f: *const i8) -> bool {
+extern "C" fn eva_check_exist_field_in_namespace(parser: *mut EvaParser, ns: *const c_char, f: *const c_char) -> bool {
     let parser = unsafe { &mut *parser };
     let internal = unsafe { &*parser.parser };
 
@@ -84,7 +84,7 @@ extern "C" fn eva_check_exist_field_in_namespace(parser: *mut EvaParser, ns: *co
 }
 
 #[unsafe(no_mangle)]
-extern "C" fn eva_get_value_from_namespace(parser: *mut EvaParser, ns: *const i8, f: *const i8) -> EvaValueFFI {
+extern "C" fn eva_get_value_from_namespace(parser: *mut EvaParser, ns: *const c_char, f: *const c_char) -> EvaValueFFI {
     let parser = unsafe { &mut *parser };
     let internal = unsafe { &*parser.parser };
 
@@ -133,7 +133,7 @@ extern "C" fn eva_get_map_length(map: EvaValueFFI) -> c_int {
 }
 
 #[unsafe(no_mangle)]
-extern "C" fn eva_get_map_field(map: EvaValueFFI, f: *const i8) -> EvaValueFFI {
+extern "C" fn eva_get_map_field(map: EvaValueFFI, f: *const c_char) -> EvaValueFFI {
     let internal = unsafe { map.data.map } as *const Vec<(String, EvaValue)>;
 
     let field =
@@ -177,7 +177,7 @@ extern "C" fn eva_dump_pointer(value: EvaValueFFI) {
 
 
 #[unsafe(no_mangle)]
-extern "C" fn eva_check_exist_field_in_map(map: EvaValueFFI, f: *const i8) -> bool {
+extern "C" fn eva_check_exist_field_in_map(map: EvaValueFFI, f: *const c_char) -> bool {
     let internal = unsafe { map.data.map } as *const Vec<(String, EvaValue)>;
 
     let field =
@@ -208,7 +208,7 @@ extern "C" fn eva_get_list_field(list: EvaValueFFI, index: c_int) -> EvaValueFFI
 }
 
 #[unsafe(no_mangle)]
-extern "C" fn eva_print_value(parser: *mut EvaParser, ns: *const i8, f: *const u8) {
+extern "C" fn eva_print_value(parser: *mut EvaParser, ns: *const c_char, f: *const c_char) {
     let parser = unsafe { &mut *parser };
     let internal = unsafe { &*parser.parser };
 
