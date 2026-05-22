@@ -6,22 +6,51 @@ jobs:
     strategy:
       matrix:
         include:
+          # Windows x86_64
           - os: windows-latest
+            arch: x86_64
             dynamic_ext: dll
             static_ext: lib
             target: x86_64-pc-windows-msvc
 
+          # Windows ARM64
+          - os: windows-latest
+            arch: arm64
+            dynamic_ext: dll
+            static_ext: lib
+            target: aarch64-pc-windows-msvc
+
+          # Linux x86_64
           - os: ubuntu-latest
+            arch: x86_64
             dynamic_ext: so
             static_ext: a
             target: x86_64-unknown-linux-gnu
 
+          # Linux ARM64
+          - os: ubuntu-latest
+            arch: arm64
+            dynamic_ext: so
+            static_ext: a
+            target: aarch64-unknown-linux-gnu
+
+          # Linux ARM32
+          - os: ubuntu-latest
+            arch: arm
+            dynamic_ext: so
+            static_ext: a
+            target: armv7-unknown-linux-gnueabihf
+
+          # macOS x86_64
           - os: macos-latest
+            arch: x86_64
             dynamic_ext: dylib
             static_ext: a
             target: x86_64-apple-darwin
 
+          # macOS ARM64 (Apple Silicon)
           - os: macos-latest
+            arch: arm64
             dynamic_ext: dylib
             static_ext: a
             target: aarch64-apple-darwin
@@ -35,16 +64,22 @@ jobs:
         with:
           target: ${{ matrix.target }}
 
+      - name: Install cross-compilation tools (Linux ARM)
+        if: contains(matrix.target, 'aarch64') || contains(matrix.target, 'armv7')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf
+
       - name: Build Dynamic Library (.${{ matrix.dynamic_ext }})
-        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release -- --crate-type cdylib
+        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release -- --crate-type cdylib -C panic=abort
 
       - name: Build Static Library (.${{ matrix.static_ext }})
-        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release -- --crate-type staticlib
+        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release -- --crate-type staticlib -C panic=abort
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: libs-${{ matrix.os }}-${{ matrix.target }}
+          name: libs-${{ matrix.os }}-${{ matrix.arch }}
           path: |
             interpreter/target/${{ matrix.target }}/release/*.${{ matrix.dynamic_ext }}
             interpreter/target/${{ matrix.target }}/release/*.${{ matrix.static_ext }}
