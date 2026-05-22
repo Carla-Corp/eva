@@ -10,21 +10,25 @@ jobs:
             dynamic_ext: dll
             static_ext: lib
             target: x86_64-pc-windows-msvc
+            rust_flags: ""
 
           - os: ubuntu-latest
             dynamic_ext: so
             static_ext: a
             target: x86_64-unknown-linux-gnu
+            rust_flags: "-C link-args=-Wl,--exclude-libs,ALL"
 
           - os: macos-latest
             dynamic_ext: dylib
             static_ext: a
             target: x86_64-apple-darwin
+            rust_flags: "-C link-args=-Wl,-dead_strip_dylibs"
 
           - os: macos-latest
             dynamic_ext: dylib
             static_ext: a
             target: aarch64-apple-darwin
+            rust_flags: "-C link-args=-Wl,-dead_strip_dylibs"
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -36,10 +40,20 @@ jobs:
           target: ${{ matrix.target }}
 
       - name: Build Dynamic Library (.${{ matrix.dynamic_ext }})
-        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release -- --crate-type cdylib --no-default-features
+        run: |
+          cd interpreter
+          cargo rustc --target ${{ matrix.target }} --release --crate-type cdylib -- \
+            ${{ matrix.rust_flags }} \
+            -C panic=abort \
+            -C codegen-units=1
 
       - name: Build Static Library (.${{ matrix.static_ext }})
-        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release -- --crate-type staticlib --no-default-features
+        run: |
+          cd interpreter
+          cargo rustc --target ${{ matrix.target }} --release --crate-type staticlib -- \
+            ${{ matrix.rust_flags }} \
+            -C panic=abort \
+            -C codegen-units=1
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
