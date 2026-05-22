@@ -10,25 +10,21 @@ jobs:
             dynamic_ext: dll
             static_ext: lib
             target: x86_64-pc-windows-msvc
-            strip: ""
 
           - os: ubuntu-latest
             dynamic_ext: so
             static_ext: a
             target: x86_64-unknown-linux-gnu
-            strip: "strip -s"
 
           - os: macos-latest
             dynamic_ext: dylib
             static_ext: a
             target: x86_64-apple-darwin
-            strip: "strip -Sx"
 
           - os: macos-latest
             dynamic_ext: dylib
             static_ext: a
             target: aarch64-apple-darwin
-            strip: "strip -Sx"
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -40,35 +36,10 @@ jobs:
           target: ${{ matrix.target }}
 
       - name: Build Dynamic Library (.${{ matrix.dynamic_ext }})
-        run: |
-          cd interpreter
-          cargo rustc --target ${{ matrix.target }} --release \
-            --no-default-features \
-            -- --crate-type cdylib \
-            -C panic=abort \
-            -C lto=true \
-            -C codegen-units=1 \
-            -C opt-level=z \
-            -C debuginfo=0
+        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release -- --crate-type cdylib
 
       - name: Build Static Library (.${{ matrix.static_ext }})
-        run: |
-          cd interpreter
-          cargo rustc --target ${{ matrix.target }} --release \
-            --no-default-features \
-            -- --crate-type staticlib \
-            -C panic=abort \
-            -C lto=true \
-            -C codegen-units=1 \
-            -C opt-level=z \
-            -C debuginfo=0
-
-      - name: Strip symbols (remove lixo)
-        if: matrix.strip != ''
-        run: |
-          cd interpreter/target/${{ matrix.target }}/release
-          ${{ matrix.strip }} *.${{ matrix.dynamic_ext }} 2>/dev/null || true
-          ${{ matrix.strip }} *.${{ matrix.static_ext }} 2>/dev/null || true
+        run: cd interpreter && cargo rustc --target ${{ matrix.target }} --release -- --crate-type staticlib
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
