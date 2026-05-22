@@ -63,12 +63,6 @@ jobs:
             static_ext: a
             use_cross: true
 
-          - os: ubuntu-latest
-            target: aarch64-unknown-freebsd
-            dynamic_ext: so
-            static_ext: a
-            use_cross: true
-
     runs-on: ${{ matrix.os }}
 
     steps:

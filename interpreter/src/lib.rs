@@ -208,7 +208,7 @@ extern "C" fn eva_get_list_field(list: EvaValueFFI, index: c_int) -> EvaValueFFI
 }
 
 #[unsafe(no_mangle)]
-extern "C" fn eva_print_value(parser: *mut EvaParser, ns: *const i8, f: *const i8) {
+extern "C" fn eva_print_value(parser: *mut EvaParser, ns: *const i8, f: *const u8) {
     let parser = unsafe { &mut *parser };
     let internal = unsafe { &*parser.parser };
 
