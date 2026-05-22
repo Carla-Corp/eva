@@ -10,25 +10,25 @@ jobs:
             dynamic_ext: dll
             static_ext: lib
             target: x86_64-pc-windows-msvc
-            rust_flags: "-C link-args=/Brepro /OPT:REF /OPT:ICF"
+            strip: ""
 
           - os: ubuntu-latest
             dynamic_ext: so
             static_ext: a
             target: x86_64-unknown-linux-gnu
-            rust_flags: "-C link-args=-Wl,--gc-sections -Wl,--strip-all -Wl,--exclude-libs,ALL"
+            strip: "strip -s"
 
           - os: macos-latest
             dynamic_ext: dylib
             static_ext: a
             target: x86_64-apple-darwin
-            rust_flags: "-C link-args=-Wl,-dead_strip -Wl,-S"
+            strip: "strip -Sx"
 
           - os: macos-latest
             dynamic_ext: dylib
             static_ext: a
             target: aarch64-apple-darwin
-            rust_flags: "-C link-args=-Wl,-dead_strip -Wl,-S"
+            strip: "strip -Sx"
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -38,35 +38,37 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           target: ${{ matrix.target }}
-          components: rust-src
 
       - name: Build Dynamic Library (.${{ matrix.dynamic_ext }})
         run: |
           cd interpreter
           cargo rustc --target ${{ matrix.target }} --release \
             --no-default-features \
-            -Z build-std=core,alloc \
-            -Z build-std-features=panic_immediate_abort \
             -- --crate-type cdylib \
             -C panic=abort \
             -C lto=true \
             -C codegen-units=1 \
             -C opt-level=z \
-            ${{ matrix.rust_flags }}
+            -C debuginfo=0
 
       - name: Build Static Library (.${{ matrix.static_ext }})
         run: |
           cd interpreter
           cargo rustc --target ${{ matrix.target }} --release \
             --no-default-features \
-            -Z build-std=core,alloc \
-            -Z build-std-features=panic_immediate_abort \
             -- --crate-type staticlib \
             -C panic=abort \
             -C lto=true \
             -C codegen-units=1 \
             -C opt-level=z \
-            ${{ matrix.rust_flags }}
+            -C debuginfo=0
+
+      - name: Strip symbols (remove lixo)
+        if: matrix.strip != ''
+        run: |
+          cd interpreter/target/${{ matrix.target }}/release
+          ${{ matrix.strip }} *.${{ matrix.dynamic_ext }} 2>/dev/null || true
+          ${{ matrix.strip }} *.${{ matrix.static_ext }} 2>/dev/null || true
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
